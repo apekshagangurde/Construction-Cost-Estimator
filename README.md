@@ -3,15 +3,17 @@
 **BuildCost Estimator** is a web-based application that helps civil engineers and project managers accurately estimate construction costs, reduce financial risk, and optimize budgets with detailed breakdowns, optimization insights, and project reports.
 
 ---
-![Home Page](https://github.com/apekshagangurde/Construction-Cost-Estimator/raw/main/screencapture-6860c90f-71c4-4acf-a95d-bddc4acda00a-00-33b0hoimqdex3-picard-replit-dev-2025-04-11-22_52_22.png)
-
-
 ## 🚀 Live Preview
 
 🔗 **[View Live Site](https://construction-cost-estimator.onrender.com/)**  
 Explore the full functionality of the app on Render's deployment!
 
 ---
+![Home Page](https://github.com/apekshagangurde/Construction-Cost-Estimator/raw/main/screencapture-6860c90f-71c4-4acf-a95d-bddc4acda00a-00-33b0hoimqdex3-picard-replit-dev-2025-04-11-22_52_22.png)
+![Dashboard Page](https://github.com/apekshagangurde/Construction-Cost-Estimator/blob/main/screencapture-6860c90f-71c4-4acf-a95d-bddc4acda00a-00-33b0hoimqdex3-picard-replit-dev-dashboard-2025-04-11-23_00_43.png)
+
+
+
 
 ## 📋 Table of Contents
 
