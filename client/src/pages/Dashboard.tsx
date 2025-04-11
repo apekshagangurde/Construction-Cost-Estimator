@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Database, FileText, LayoutDashboard } from "lucide-react";
 
 const Dashboard = () => {
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | number | null>(null);
   const chartRef = useRef<HTMLCanvasElement>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   
@@ -36,7 +36,7 @@ const Dashboard = () => {
   });
   
   // Handler when a project is created
-  const handleProjectCreated = (projectId: number) => {
+  const handleProjectCreated = (projectId: string | number) => {
     setSelectedProjectId(projectId);
     setActiveTab("dashboard");
   };

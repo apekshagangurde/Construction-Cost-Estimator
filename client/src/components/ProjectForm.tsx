@@ -12,15 +12,23 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { projectFormSchema, type InsertProject } from "@shared/schema";
+import { projectFormSchema, type InsertProject, type ProjectWithCalculations } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { projectService } from "@/lib/firebase";
+import { 
+  generateCostBreakdown, 
+  generateOptimizations, 
+  calculateSquareFootage, 
+  calculateCostPerSquareFoot, 
+  calculateTotalSavings 
+} from "@/utils/calculations";
 
 interface ProjectFormProps {
-  onProjectCreated?: (projectId: number) => void;
+  onProjectCreated?: (projectId: string) => void;
 }
 
 const ProjectForm = ({ onProjectCreated }: ProjectFormProps) => {
@@ -32,19 +40,93 @@ const ProjectForm = ({ onProjectCreated }: ProjectFormProps) => {
     defaultValues: {
       name: "",
       type: "commercial",
-      length: 80,
-      width: 60,
-      height: 24,
+      length: "80",
+      width: "60", 
+      height: "24",
       foundation: "concrete",
       structure: "steel",
       exterior: "glass",
       roofing: "metal",
-      laborRate: 45,
-      laborHours: 5600,
+      laborRate: "45",
+      laborHours: "5600",
       additionalRequirements: "",
     },
   });
   
+  // Firebase mutation
+  const createFirebaseProjectMutation = useMutation({
+    mutationFn: async (data: InsertProject) => {
+      // Calculate costs and create data for Firebase
+      const length = parseFloat(data.length);
+      const width = parseFloat(data.width);
+      const height = parseFloat(data.height);
+      const laborRate = parseFloat(data.laborRate);
+      const laborHours = parseFloat(data.laborHours);
+      
+      // Calculate costs
+      const materialsCost = length * width * 45; // Simplified calculation
+      const laborCost = laborRate * laborHours;
+      const equipmentCost = length * width * 8.5;
+      const overheadCost = (materialsCost + laborCost + equipmentCost) * 0.12;
+      const totalCost = materialsCost + laborCost + equipmentCost + overheadCost;
+      
+      // Generate detailed breakdown
+      const squareFootage = calculateSquareFootage(length, width);
+      const costPerSquareFoot = calculateCostPerSquareFoot(totalCost, length, width);
+      const costBreakdownItems = generateCostBreakdown(data, materialsCost, laborCost, equipmentCost, overheadCost);
+      const optimizationSuggestions = generateOptimizations(data, materialsCost, laborCost, equipmentCost, overheadCost);
+      const potentialSavings = calculateTotalSavings(optimizationSuggestions);
+      const optimizedCost = totalCost - potentialSavings;
+      const savingsPercentage = (potentialSavings / totalCost) * 100;
+      
+      // Create project data for Firebase
+      const projectData = {
+        ...data,
+        materialsCost: materialsCost.toString(),
+        laborCost: laborCost.toString(),
+        equipmentCost: equipmentCost.toString(),
+        overheadCost: overheadCost.toString(),
+        totalCost: totalCost.toString(),
+        squareFootage,
+        costPerSquareFoot,
+        costBreakdownItems,
+        optimizationSuggestions,
+        potentialSavings,
+        optimizedCost,
+        savingsPercentage,
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Save to Firestore
+      return await projectService.createProject(projectData);
+    },
+    onSuccess: (projectId) => {
+      toast({
+        title: "Project created in Firebase",
+        description: "Your project has been successfully saved to Firebase and cost estimation is complete.",
+      });
+      
+      if (onProjectCreated) {
+        onProjectCreated(projectId);
+      }
+      
+      // Reset the form but keep some of the values for convenience
+      form.reset({
+        ...form.getValues(),
+        name: "",
+        additionalRequirements: "",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Firebase Error",
+        description: `Failed to create project in Firebase: ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Fallback to API if needed
   const createProjectMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
       const response = await apiRequest("POST", "/api/projects", data);
@@ -73,14 +155,20 @@ const ProjectForm = ({ onProjectCreated }: ProjectFormProps) => {
     onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to create project: ${error.message}`,
+        description: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: InsertProject) => {
-    createProjectMutation.mutate(data);
+    // Try Firebase first, fallback to API
+    try {
+      createFirebaseProjectMutation.mutate(data);
+    } catch (error) {
+      console.error("Firebase error, falling back to API:", error);
+      createProjectMutation.mutate(data);
+    }
   };
 
   return (
