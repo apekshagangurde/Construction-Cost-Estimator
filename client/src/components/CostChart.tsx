@@ -92,9 +92,14 @@ const CostChart = ({
     <div className="h-72">
       <canvas 
         ref={(node) => {
-          canvasRef.current = node;
-          if (chartRef && node) {
-            chartRef.current = node;
+          if (node) {
+            // Use a non-null assertion since we've checked node is not null
+            (canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current = node;
+            
+            // If chartRef is provided, also set it
+            if (chartRef) {
+              (chartRef as React.MutableRefObject<HTMLCanvasElement | null>).current = node;
+            }
           }
         }} 
       />
