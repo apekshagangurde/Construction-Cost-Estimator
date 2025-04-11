@@ -79,6 +79,10 @@ const ProjectForm = ({ onProjectCreated }: ProjectFormProps) => {
       const optimizedCost = totalCost - potentialSavings;
       const savingsPercentage = (potentialSavings / totalCost) * 100;
       
+      // For TypeScript compatibility
+      const costBreakdown = costBreakdownItems;
+      const optimizations = optimizationSuggestions;
+      
       // Create project data for Firebase
       const projectData = {
         ...data,
@@ -91,6 +95,8 @@ const ProjectForm = ({ onProjectCreated }: ProjectFormProps) => {
         costPerSquareFoot,
         costBreakdownItems,
         optimizationSuggestions,
+        costBreakdown: costBreakdownItems,  // Add for TypeScript compatibility
+        optimizations: optimizationSuggestions,  // Add for TypeScript compatibility
         potentialSavings,
         optimizedCost,
         savingsPercentage,
@@ -442,9 +448,9 @@ const ProjectForm = ({ onProjectCreated }: ProjectFormProps) => {
               
               <Button 
                 type="submit"
-                disabled={createProjectMutation.isPending}
+                disabled={createProjectMutation.isPending || createFirebaseProjectMutation.isPending}
               >
-                {createProjectMutation.isPending ? (
+                {createProjectMutation.isPending || createFirebaseProjectMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Calculating...
