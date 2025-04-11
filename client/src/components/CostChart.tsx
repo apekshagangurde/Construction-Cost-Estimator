@@ -1,10 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useRef } from "react";
-import { Chart, ArcElement, Tooltip, Legend, ChartData } from "chart.js";
+import { Chart, ArcElement, Tooltip, Legend, ChartData, DoughnutController } from "chart.js";
 import { formatCurrency } from "@/utils/calculations";
 
 // Register Chart.js components
-Chart.register(ArcElement, Tooltip, Legend);
+Chart.register(ArcElement, Tooltip, Legend, DoughnutController);
 
 interface CostChartProps {
   materialsCost: number;
